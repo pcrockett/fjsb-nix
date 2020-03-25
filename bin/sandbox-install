@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+# This script is based on the template here:
+#
+#     https://gist.github.com/pcrockett/8e04641f8473081c3a93de744873f787
+#
+# Useful links when writing a script:
+#
+# Shellcheck: https://github.com/koalaman/shellcheck
+# vscode-shellcheck: https://github.com/timonwong/vscode-shellcheck
+# https://blog.yossarian.net/2020/01/23/Anybody-can-write-good-bash-with-a-little-effort
+#
+
+# https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
+set -Eeuo pipefail
+
+[[ "${BASH_VERSINFO[0]}" -lt 4 ]] && echo "Bash >= 4 required" && exit 1
+
+DEPENDENCIES=(nix-env)
+
+function panic {
+    >&2 echo "Fatal: $*"
+    exit 1
+}
+
+function installed() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+for dep in "${DEPENDENCIES[@]}"; do
+    installed "${dep}" || panic "Missing '${dep}'"
+done
+
+function usage_and_exit() {
+    >&2 echo "Usage: sandbox-install <sandbox-name> <software-to-install>"
+    exit 1
+}
+
+function is_set() {
+    # Use this like so:
+    #
+    #     is_set "${VAR_NAME+x}" || usage_and_exit
+    #
+    # https://stackoverflow.com/a/13864829
+
+    test ! -z "$1"
+}
+
+is_set "${1+x}" || usage_and_exit
+is_set "${2+x}" || usage_and_exit
+
+SANDBOX_NAME="$1"
+SOFTWARE_NAME="$2"
+
+nix-env --profile "/nix/var/nix/profiles/per-user/$USER/$SANDBOX_NAME" --install "$SOFTWARE_NAME"
