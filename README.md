@@ -8,7 +8,7 @@ Usage
 
 ```bash
 # Install the plugin
-git clone https://github.com/pcrockett/fjsb-nix
+git clone https://github.com/pcrockett/fjsb-nix.git
 install-fjsb-plugin ./fjsb-nix
 
 # Install cowsay for the "personal" sandbox only
